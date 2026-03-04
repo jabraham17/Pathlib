@@ -27,7 +27,7 @@ jobs:
           mason build
       - name: Run mason tests
         run: |
-          mason test
+          mason test --parallel
       - name: Run chplcheck
         run: |
           chplcheck src/**/*.chpl
