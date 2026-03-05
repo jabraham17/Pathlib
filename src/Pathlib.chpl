@@ -145,13 +145,14 @@ module Pathlib {
                          is ``false``.
     */
     proc mkdir(parents=false, existOk=false) throws {
-      if isDir(this.pathStr) {
+      if this.isDir() {
         if existOk {
           return;
         } else {
           throw new PathError("Directory already exists");
         }
-        mkdir(this.pathStr, parents=parents);
+      } else {
+        FS.mkdir(this.pathStr, parents=parents);
       }
     }
 
