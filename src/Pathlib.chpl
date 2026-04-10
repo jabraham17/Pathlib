@@ -21,6 +21,7 @@
 module Pathlib {
   import Path;
   import FileSystem as FS;
+  import FileSystem.{cwd,chdir};
 
   /**/
   class PathError: Error {
@@ -35,6 +36,25 @@ module Pathlib {
       return s[0..#(s.size - suffix.size)];
     else
       return s;
+  }
+
+  @chpldoc.nodoc
+  record chdirManager: contextManager {
+    var loc: locale;
+    var targetDir: path;
+    var originalDir: path;
+
+    proc init(targetDir: path, loc: locale) throws {
+      this.targetDir = targetDir;
+      init this;
+      this.originalDir = path.cwd(loc=loc);
+    }
+
+    proc ref enterContext() throws do this.targetDir.chdir(loc=loc);
+    proc ref exitContext(in err: owned Error?) throws {
+      if err then throw err;
+      this.originalDir.chdir(loc=loc);
+    }
   }
 
   /*
@@ -56,6 +76,10 @@ module Pathlib {
     /* Initialize a ``path`` from a string representing a filesystem path. */
     proc init(pathStr: string) {
       this.pathStr = pathStr;
+    }
+    @chpldoc.nodoc
+    proc init() {
+      this.pathStr = "";
     }
 
     /* Copy-initialize a ``path`` from another ``path``. */
@@ -101,6 +125,32 @@ module Pathlib {
         }
       }
       return Path.joinPath((...s)):path;
+    }
+
+    /* Return a new ``path`` representing the current working directory. */
+    proc type cwd(loc = here): path throws {
+      return new path(loc.cwd());
+    }
+
+    /* Change the current working directory to this path. */
+    proc chdir(loc = here) throws {
+      loc.chdir(this.pathStr);
+    }
+    /*
+      Returns a contextManager that will enter the given directory and return
+      to the original directory when the context is exited. For example:
+
+      .. code-block:: chapel
+
+        var p = new path("/some/dir");
+        manage p.pushChdir(p) {
+          // CWD is now "/some/dir"
+          ...
+        }
+        // CWD is restored to its original value
+    */
+    proc pushChdir(loc = here): chdirManager throws {
+      return new chdirManager(this, loc);
     }
 
     /*
@@ -157,6 +207,22 @@ module Pathlib {
         }
       } else {
         FS.mkdir(this.pathStr, parents=parents);
+      }
+    }
+
+    /*
+      Remove the file or directory at this path. If this path is a
+      directory, it and all its contents are removed.
+
+      :throws PathError: If the path does not exist.
+    */
+    proc remove() throws {
+      if this.isDir() {
+        FS.rmTree(this.pathStr);
+      } else if this.isFile() {
+        FS.remove(this.pathStr);
+      } else {
+        throw new PathError("Path does not exist");
       }
     }
 
