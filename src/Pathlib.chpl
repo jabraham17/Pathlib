@@ -22,7 +22,9 @@ module Pathlib {
   import Path;
   import FileSystem as FS;
 
+  /**/
   class PathError: Error {
+    /**/
     proc init(msg: string) {
       super.init(msg);
     }
@@ -60,6 +62,7 @@ module Pathlib {
     proc init=(other: path) {
       this.pathStr = other.pathStr;
     }
+    /**/
     operator =(ref x: path, other: path) do
       x.pathStr = other.pathStr;
 
@@ -67,6 +70,7 @@ module Pathlib {
     proc init=(other: string) {
       this.pathStr = other;
     }
+    /**/
     operator =(ref x: path, other: string) do
       x.pathStr = other;
 
