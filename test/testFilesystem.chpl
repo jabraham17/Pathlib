@@ -168,7 +168,7 @@ proc testChdirContext(test: borrowed Test) throws {
   test.dependsOn(createTempDir);
   var original = path.cwd();
   var target: path = testTempDir;
-  manage target.chdirContext() {
+  manage target.pushChdir() {
     var inside = path.cwd();
     test.assertEqual(inside.resolve():string, target.resolve():string);
   }
@@ -200,7 +200,7 @@ proc testChdirContextDoesNotExist(test: borrowed Test) throws {
   test.dependsOn(createTempDir);
   var target = testTempDir:path / "_pathlib_test_chdir_context_nonexistent";
   try {
-    manage target.chdirContext() {
+    manage target.pushChdir() {
       var inside = path.cwd();
       test.assertEqual(inside.resolve():string, target.resolve():string);
     }

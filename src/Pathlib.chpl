@@ -37,20 +37,20 @@ module Pathlib {
   }
 
   @chpldoc.nodoc
-  record cdManager: contextManager {
-    var p: path;
-    var initDir: path;
+  record chdirManager: contextManager {
+    var targetDir: path;
+    var originalDir: path;
 
-    proc init(p: path) throws {
-      this.p = p;
+    proc init(targetDir: path) throws {
+      this.targetDir = targetDir;
       init this;
-      this.initDir = path.cwd();
+      this.originalDir = path.cwd();
     }
 
-    proc ref enterContext() throws do p.chdir();
+    proc ref enterContext() throws do this.targetDir.chdir();
     proc ref exitContext(in err: owned Error?) throws {
       if err then throw err;
-      initDir.chdir();
+      this.originalDir.chdir();
     }
   }
 
@@ -131,9 +131,21 @@ module Pathlib {
     proc chdir(loc = here) throws {
       loc.chdir(this.pathStr);
     }
+    /*
+      Returns a contextManager that will enter the given directory and return
+      to the original directory when the context is exited. For example:
 
-    proc chdirContext(): cdManager throws {
-      return new cdManager(this);
+      .. code-block:: chapel
+
+        var p = new path("/some/dir");
+        manage p.pushChdir(p) {
+          // CWD is now "/some/dir"
+          ...
+        }
+        // CWD is restored to its original value
+    */
+    proc pushChdir(loc = here): chdirManager throws {
+      return new chdirManager(this);
     }
 
     /*
