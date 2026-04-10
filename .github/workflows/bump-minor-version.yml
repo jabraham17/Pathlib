@@ -44,6 +44,16 @@ jobs:
       uses: mikefarah/yq@v4
       with:
         cmd: yq -i '.brick.version="${{ steps.bump_version.outputs.result }}"' Mason.toml
+    - name: Get name from Mason.toml
+      id: package_name
+      uses: mikefarah/yq@v4
+      with:
+        cmd: yq .brick.name Mason.toml
+    - name: Update version in README.md
+      run: |
+        NAME=${{ steps.package_name.outputs.result }}
+        NEW_VERSION=${{ steps.bump_version.outputs.result }}
+        sed "s/mason add $NAME@[0-9]*\.[0-9]*\.[0-9]*/mason add $NAME@$NEW_VERSION/g" README.md > README.tmp && mv README.tmp README.md
     - name: Commit and push changes
       run: |
         git add Mason.toml

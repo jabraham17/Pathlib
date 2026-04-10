@@ -376,4 +376,58 @@ module Pathlib {
     lhs = lhs / rhs;
 
 
+  /*
+    The ``Pathlib`` module provides a new abstraction for filesystem paths, but
+    many parts of the standard library still require paths to be passed as
+    arguments as strings. The ``IOHelpers`` module provides helper functions
+    for working with the :mod:`IO` module that accept and return ``path``
+    values instead of strings, allowing for easier interoperability between the
+    two modules.
+
+    To make use of this, simply include the module and use the helper functions
+    when working with :mod:`IO`:
+
+    .. literalinclude:: test/docExamples/ioHelpers.chpl
+      :language: chapel
+      :start-after: START_EXAMPLE
+      :end-before: STOP_EXAMPLE
+  */
+  module IOHelpers {
+    import IO;
+    import Pathlib.path;
+
+    /*
+      See https://chapel-lang.org/docs/modules/standard/IO.html#IO.open
+    */
+    proc open(p:path, mode:IO.ioMode,
+              hints=IO.ioHintSet.empty): IO.file throws do
+      return IO.open(p:string, mode=mode, hints=hints);
+
+    /*
+      See https://chapel-lang.org/docs/modules/standard/IO.html#IO.openReader
+    */
+    proc openReader(p:path, param locking = false,
+                    region: range(?) = 0.., hints=IO.ioHintSet.empty,
+                    in deserializer: ?dt = none) throws {
+      if dt == nothing then
+        return IO.openReader(p:string, locking=locking, region=region,
+                             hints=hints);
+      else
+        return IO.openReader(p:string, locking=locking, region=region,
+                             hints=hints, deserializer=deserializer);
+    }
+    /*
+      See https://chapel-lang.org/docs/modules/standard/IO.html#IO.openWriter
+    */
+    proc openWriter(p:path, param locking = false,
+                    hints = IO.ioHintSet.empty,
+                    in serializer: ?st = none) throws {
+      if st == nothing then
+        return IO.openWriter(p:string, locking=locking, hints=hints);
+      else
+        return IO.openWriter(p:string, locking=locking, hints=hints,
+                             serializer=serializer);
+    }
+  }
+
 }
