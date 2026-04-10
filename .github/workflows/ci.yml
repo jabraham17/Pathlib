@@ -33,7 +33,7 @@ jobs:
           done
       - name: Run mason tests
         run: |
-          mason test --parallel
+          mason test --show --parallel
       - name: Run chplcheck
         run: |
           chplcheck src/**/*.chpl
