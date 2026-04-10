@@ -69,7 +69,7 @@ module Pathlib {
       :start-after: START_EXAMPLE
       :end-before: STOP_EXAMPLE
   */
-  record path {
+  record path: writeSerializable {
     @chpldoc.nodoc
     var pathStr: string;
 
@@ -108,6 +108,11 @@ module Pathlib {
     /* Get the string representation of this path. */
     operator :(other: path, type t) where t == string do
       return other.toStr();
+
+    @chpldoc.nodoc
+    proc serialize(writer, ref serializer) throws {
+      writer.write("path(", this.pathStr, ")");
+    }
 
     /*
       Join one or more path segments, inserting the platform separator
