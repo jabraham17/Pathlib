@@ -9,7 +9,7 @@ Pathlib provides a `path` record that wraps common filesystem operations, offeri
 Add Pathlib as a Mason dependency:
 
 ```bash
-mason add Pathlib@0.1.0
+mason add Pathlib@0.2.0
 ```
 
 ## Usage
