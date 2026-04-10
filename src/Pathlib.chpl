@@ -396,11 +396,16 @@ module Pathlib {
     import IO;
     import Pathlib.path;
 
-    /**/
+    /*
+      See https://chapel-lang.org/docs/modules/standard/IO.html#IO.open
+    */
     proc open(p:path, mode:IO.ioMode,
               hints=IO.ioHintSet.empty): IO.file throws do
       return IO.open(p:string, mode=mode, hints=hints);
 
+    /*
+      See https://chapel-lang.org/docs/modules/standard/IO.html#IO.openReader
+    */
     proc openReader(p:path, param locking = false,
                     region: range(?) = 0.., hints=IO.ioHintSet.empty,
                     in deserializer: ?dt = none) throws {
@@ -411,6 +416,9 @@ module Pathlib {
         return IO.openReader(p:string, locking=locking, region=region,
                              hints=hints, deserializer=deserializer);
     }
+    /*
+      See https://chapel-lang.org/docs/modules/standard/IO.html#IO.openWriter
+    */
     proc openWriter(p:path, param locking = false,
                     hints = IO.ioHintSet.empty,
                     in serializer: ?st = none) throws {
