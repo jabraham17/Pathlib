@@ -38,19 +38,20 @@ module Pathlib {
 
   @chpldoc.nodoc
   record chdirManager: contextManager {
+    var loc: locale;
     var targetDir: path;
     var originalDir: path;
 
-    proc init(targetDir: path) throws {
+    proc init(targetDir: path, loc: locale) throws {
       this.targetDir = targetDir;
       init this;
-      this.originalDir = path.cwd();
+      this.originalDir = path.cwd(loc=loc);
     }
 
-    proc ref enterContext() throws do this.targetDir.chdir();
+    proc ref enterContext() throws do this.targetDir.chdir(loc=loc);
     proc ref exitContext(in err: owned Error?) throws {
       if err then throw err;
-      this.originalDir.chdir();
+      this.originalDir.chdir(loc=loc);
     }
   }
 
@@ -145,7 +146,7 @@ module Pathlib {
         // CWD is restored to its original value
     */
     proc pushChdir(loc = here): chdirManager throws {
-      return new chdirManager(this);
+      return new chdirManager(this, loc);
     }
 
     /*
