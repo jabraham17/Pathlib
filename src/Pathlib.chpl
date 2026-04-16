@@ -18,6 +18,8 @@
     :start-after: START_EXAMPLE
     :end-before: STOP_EXAMPLE
 */
+@chpldoc.noUsage
+@chpldoc.noAutoInclude
 module Pathlib {
   import Path;
   import FileSystem as FS;
