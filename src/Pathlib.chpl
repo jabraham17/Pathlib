@@ -48,9 +48,17 @@ module Pathlib {
       this.targetDir = targetDir;
       init this;
       this.originalDir = path.cwd(loc=loc);
+      checkTargetDir();
+    }
+    @chpldoc.nodoc
+    proc checkTargetDir() throws {
+      if !this.targetDir.isDir() then
+        throw new PathError("Target path is not a directory");
     }
 
-    proc ref enterContext() throws do this.targetDir.chdir(loc=loc);
+    // TODO: this try! is so unfortunate but without it enterContext can't
+    // implement the interface
+    proc ref enterContext() do try! this.targetDir.chdir(loc=loc);
     proc ref exitContext(in err: owned Error?) throws {
       if err then throw err;
       this.originalDir.chdir(loc=loc);
