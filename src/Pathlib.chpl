@@ -451,19 +451,19 @@ module Pathlib {
         yield entry:path;
       }
     }
-  @chpldoc.nodoc
-  iter walkDirs(
-    topdown: bool = true, depth: int = max(int),
-    hidden: bool = false, followlinks: bool = false,
-    sort: bool = false, param tag: iterKind
-  ): path throws
-  where tag == iterKind.standalone {
-    forall entry in FS.walkDirs(this.pathStr, topdown=topdown, depth=depth,
-                                hidden=hidden, followlinks=followlinks,
-                                sort=sort) {
-      yield entry:path;
+    @chpldoc.nodoc
+    iter walkDirs(
+      topdown: bool = true, depth: int = max(int),
+      hidden: bool = false, followlinks: bool = false,
+      sort: bool = false, param tag: iterKind
+    ): path throws
+    where tag == iterKind.standalone {
+      forall entry in FS.walkDirs(this.pathStr, topdown=topdown, depth=depth,
+                                  hidden=hidden, followlinks=followlinks,
+                                  sort=sort) {
+        yield entry:path;
+      }
     }
-  }
 
   }
 
