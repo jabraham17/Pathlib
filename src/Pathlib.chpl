@@ -248,6 +248,14 @@ module Pathlib {
       }
     }
 
+    /*
+      Copy the file or directory at this path to the destination path.
+
+      See https://chapel-lang.org/docs/modules/standard/FileSystem.html#FileSystem.copy
+      and https://chapel-lang.org/docs/modules/standard/FileSystem.html#FileSystem.copyTree
+      for more details on the available options for copying files and directories.
+
+    */
     proc copy(dest: path,
               copySymbolically: bool = false,
               metadata: bool = false,
@@ -265,6 +273,12 @@ module Pathlib {
       }
     }
 
+    /*
+      Move the file or directory at this path to the destination path.
+
+      See https://chapel-lang.org/docs/modules/standard/FileSystem.html#FileSystem.moveDir
+      for more details on moving directories.
+    */
     proc move(dest: path) throws {
       if this.isDir() {
         FS.moveDir(this.pathStr, dest.pathStr);
