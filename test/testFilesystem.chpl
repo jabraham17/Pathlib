@@ -217,4 +217,212 @@ proc testResolve(test: borrowed Test) throws {
   test.assertTrue(resolved.isAbsolute());
 }
 
+proc testIsSymlinkTrue(test: borrowed Test) throws {
+  test.dependsOn(createTempDir);
+  var target = testTempDir:path / "_pathlib_test_symlink_target";
+  target.touch();
+  var link = testTempDir:path / "_pathlib_test_symlink_link";
+  FileSystem.symlink(target.toStr(), link.toStr());
+  test.assertTrue(link.isSymlink());
+}
+
+proc testIsSymlinkFalse(test: borrowed Test) throws {
+  test.dependsOn(createTempDir);
+  var p = testTempDir:path / "_pathlib_test_not_symlink";
+  p.touch();
+  test.assertFalse(p.isSymlink());
+}
+
+proc testCopyFile(test: borrowed Test) throws {
+  test.dependsOn(createTempDir);
+  var src = testTempDir:path / "_pathlib_test_copy_src.txt";
+  src.touch();
+  // Write some content to verify the copy
+  {
+    use IO;
+    var f = IO.open(src.toStr(), ioMode.cw);
+    var w = f.writer(locking=false);
+    w.write("copy content");
+    w.close();
+    f.close();
+  }
+  var dest = testTempDir:path / "_pathlib_test_copy_dest.txt";
+  src.copy(dest);
+  test.assertTrue(dest.exists());
+  test.assertTrue(dest.isFile());
+  // Verify content was copied
+  {
+    use IO;
+    var f = IO.open(dest.toStr(), ioMode.r);
+    var r = f.reader(locking=false);
+    var content: string;
+    r.readAll(content);
+    r.close();
+    f.close();
+    test.assertEqual(content, "copy content");
+  }
+}
+
+proc testCopyDir(test: borrowed Test) throws {
+  test.dependsOn(createTempDir);
+  var src = testTempDir:path / "_pathlib_test_copy_dir_src";
+  src.mkdir();
+  (src / "child.txt").touch();
+  var dest = testTempDir:path / "_pathlib_test_copy_dir_dest";
+  src.copy(dest);
+  test.assertTrue(dest.exists());
+  test.assertTrue(dest.isDir());
+  test.assertTrue((dest / "child.txt").exists());
+}
+
+proc testCopyNonexistent(test: borrowed Test) throws {
+  var src = testTempDir:path / "_pathlib_test_copy_nonexistent";
+  var dest = testTempDir:path / "_pathlib_test_copy_nonexistent_dest";
+  try {
+    src.copy(dest);
+    test.assertTrue(false);
+  } catch {
+    test.assertTrue(true);
+  }
+}
+
+proc testMoveFile(test: borrowed Test) throws {
+  test.dependsOn(createTempDir);
+  var src = testTempDir:path / "_pathlib_test_move_src.txt";
+  src.touch();
+  {
+    use IO;
+    var f = IO.open(src.toStr(), ioMode.cw);
+    var w = f.writer(locking=false);
+    w.write("move content");
+    w.close();
+    f.close();
+  }
+  var dest = testTempDir:path / "_pathlib_test_move_dest.txt";
+  src.move(dest);
+  test.assertFalse(src.exists());
+  test.assertTrue(dest.exists());
+  test.assertTrue(dest.isFile());
+  // Verify content was moved
+  {
+    use IO;
+    var f = IO.open(dest.toStr(), ioMode.r);
+    var r = f.reader(locking=false);
+    var content: string;
+    r.readAll(content);
+    r.close();
+    f.close();
+    test.assertEqual(content, "move content");
+  }
+}
+
+proc testMoveDir(test: borrowed Test) throws {
+  test.dependsOn(createTempDir);
+  var src = testTempDir:path / "_pathlib_test_move_dir_src";
+  src.mkdir();
+  (src / "child.txt").touch();
+  var dest = testTempDir:path / "_pathlib_test_move_dir_dest";
+  src.move(dest);
+  test.assertFalse(src.exists());
+  test.assertTrue(dest.exists());
+  test.assertTrue(dest.isDir());
+  test.assertTrue((dest / "child.txt").exists());
+}
+
+proc testMoveNonexistent(test: borrowed Test) throws {
+  var src = testTempDir:path / "_pathlib_test_move_nonexistent";
+  var dest = testTempDir:path / "_pathlib_test_move_nonexistent_dest";
+  try {
+    src.move(dest);
+    test.assertTrue(false);
+  } catch {
+    test.assertTrue(true);
+  }
+}
+
+proc testFindFiles(test: borrowed Test) throws {
+  test.dependsOn(createTempDir);
+  var dir = testTempDir:path / "_pathlib_test_findfiles";
+  dir.mkdir();
+  (dir / "a.txt").touch();
+  (dir / "b.txt").touch();
+  var count = 0;
+  for f in dir.findFiles() {
+    test.assertTrue(f.exists());
+    count += 1;
+  }
+  test.assertEqual(count, 2);
+}
+
+proc testFindFilesRecursive(test: borrowed Test) throws {
+  test.dependsOn(createTempDir);
+  var dir = testTempDir:path / "_pathlib_test_findfiles_recursive";
+  dir.mkdir();
+  (dir / "a.txt").touch();
+  (dir / "sub").mkdir();
+  (dir / "sub" / "b.txt").touch();
+  var count = 0;
+  for f in dir.findFiles(recursive=true) {
+    test.assertTrue(f.exists());
+    count += 1;
+  }
+  test.assertEqual(count, 2);
+}
+
+proc testListDir(test: borrowed Test) throws {
+  test.dependsOn(createTempDir);
+  var dir = testTempDir:path / "_pathlib_test_listdir";
+  dir.mkdir();
+  (dir / "file1.txt").touch();
+  (dir / "file2.txt").touch();
+  (dir / "subdir").mkdir();
+  var count = 0;
+  for entry in dir.listDir() {
+    count += 1;
+  }
+  test.assertEqual(count, 3);
+}
+
+proc testListDirFilesOnly(test: borrowed Test) throws {
+  test.dependsOn(createTempDir);
+  var dir = testTempDir:path / "_pathlib_test_listdir_files";
+  dir.mkdir();
+  (dir / "file1.txt").touch();
+  (dir / "file2.txt").touch();
+  (dir / "subdir").mkdir();
+  var count = 0;
+  for entry in dir.listDir(dirs=false) {
+    count += 1;
+  }
+  test.assertEqual(count, 2);
+}
+
+proc testWalkDirs(test: borrowed Test) throws {
+  test.dependsOn(createTempDir);
+  var dir = testTempDir:path / "_pathlib_test_walkdirs";
+  dir.mkdir();
+  (dir / "sub1").mkdir();
+  (dir / "sub1" / "sub2").mkdir();
+  var count = 0;
+  for d in dir.walkDirs(sort=true) {
+    count += 1;
+  }
+  // Should find dir, dir/sub1, dir/sub1/sub2
+  test.assertEqual(count, 3);
+}
+
+proc testWalkDirsDepth(test: borrowed Test) throws {
+  test.dependsOn(createTempDir);
+  var dir = testTempDir:path / "_pathlib_test_walkdirs_depth";
+  dir.mkdir();
+  (dir / "sub1").mkdir();
+  (dir / "sub1" / "sub2").mkdir();
+  var count = 0;
+  for d in dir.walkDirs(depth=1, sort=true) {
+    count += 1;
+  }
+  // depth=1: dir and dir/sub1 only
+  test.assertEqual(count, 2);
+}
+
 UnitTest.main();

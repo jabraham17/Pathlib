@@ -190,6 +190,13 @@ module Pathlib {
     }
 
     /*
+      Return ``true`` if this path points to a symbolic link.
+    */
+    proc isSymlink(): bool throws {
+      return FS.isSymlink(this.pathStr);
+    }
+
+    /*
       Create the file at this path if it does not exist, or update its
       modification time if it does. Analogous to the UNIX ``touch``
       command.
@@ -236,6 +243,49 @@ module Pathlib {
         FS.rmTree(this.pathStr);
       } else if this.isFile() {
         FS.remove(this.pathStr);
+      } else {
+        throw new PathError("Path does not exist");
+      }
+    }
+
+    /*
+      Copy the file or directory at this path to the destination path.
+
+      See https://chapel-lang.org/docs/modules/standard/FileSystem.html#FileSystem.copy
+      and https://chapel-lang.org/docs/modules/standard/FileSystem.html#FileSystem.copyTree
+      for more details on the available options for copying files and directories.
+
+    */
+    proc copy(dest: path,
+              copySymbolically: bool = false,
+              metadata: bool = false,
+              permissions: bool = true) throws {
+      if this.isDir() {
+        FS.copyTree(this.pathStr, dest.pathStr,
+                    copySymbolically=copySymbolically,
+                    metadata=metadata);
+      } else if this.isFile() {
+        FS.copy(this.pathStr, dest.pathStr,
+                metadata=metadata,
+                permissions=permissions);
+      } else {
+        throw new PathError("Path does not exist");
+      }
+    }
+
+    /*
+      Move the file or directory at this path to the destination path.
+
+      See https://chapel-lang.org/docs/modules/standard/FileSystem.html#FileSystem.moveDir
+      for more details on moving directories.
+    */
+    proc move(dest: path) throws {
+      if this.isDir() {
+        FS.moveDir(this.pathStr, dest.pathStr);
+      } else if this.isFile() {
+        this.copy(dest, copySymbolically=false,
+                  metadata=true, permissions=true);
+        this.remove();
       } else {
         throw new PathError("Path does not exist");
       }
@@ -366,6 +416,67 @@ module Pathlib {
     */
     proc resolve() throws {
       return Path.absPath(Path.realPath(Path.expandVars(this.pathStr))):path;
+    }
+
+    /*
+      See https://chapel-lang.org/docs/modules/standard/FileSystem.html#FileSystem.findFiles
+    */
+    iter findFiles(recursive: bool = false, hidden: bool = false): path throws {
+      foreach entry in FS.findFiles(this.pathStr,
+                                    recursive=recursive, hidden=hidden) {
+        yield entry:path;
+      }
+    }
+    @chpldoc.nodoc
+    iter findFiles(
+      recursive: bool = false, hidden: bool = false, param tag: iterKind
+    ): path throws
+    where tag == iterKind.standalone {
+      forall entry in FS.findFiles(this.pathStr,
+                                   recursive=recursive, hidden=hidden) {
+        yield entry:path;
+      }
+    }
+
+    /*
+      See https://chapel-lang.org/docs/modules/standard/FileSystem.html#FileSystem.listDir
+    */
+    iter listDir(
+      hidden: bool = false, dirs: bool = true,
+      files: bool = true, listlinks: bool = true
+    ): path throws {
+      foreach entry in FS.listDir(this.pathStr, hidden=hidden, dirs=dirs,
+                                  files=files, listlinks=listlinks) {
+        yield entry:path;
+      }
+    }
+
+    /*
+      See https://chapel-lang.org/docs/modules/standard/FileSystem.html#FileSystem.walkDirs
+    */
+    iter walkDirs(
+      topdown: bool = true, depth: int = max(int),
+      hidden: bool = false, followlinks: bool = false,
+      sort: bool = false
+    ): path throws {
+      foreach entry in FS.walkDirs(this.pathStr, topdown=topdown, depth=depth,
+                                   hidden=hidden, followlinks=followlinks,
+                                   sort=sort) {
+        yield entry:path;
+      }
+    }
+    @chpldoc.nodoc
+    iter walkDirs(
+      topdown: bool = true, depth: int = max(int),
+      hidden: bool = false, followlinks: bool = false,
+      sort: bool = false, param tag: iterKind
+    ): path throws
+    where tag == iterKind.standalone {
+      forall entry in FS.walkDirs(this.pathStr, topdown=topdown, depth=depth,
+                                  hidden=hidden, followlinks=followlinks,
+                                  sort=sort) {
+        yield entry:path;
+      }
     }
 
   }
