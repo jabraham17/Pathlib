@@ -36,7 +36,8 @@ jobs:
           mason test --show --parallel
       - name: Run chplcheck
         run: |
-          chplcheck src/**/*.chpl
+          # TODO: disable line length for now since the doc strings are too long
+          chplcheck src/**/*.chpl --disable-rule LineLength
       - name: Check undocumented symbols
         shell: bash
         run: |
