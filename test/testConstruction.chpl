@@ -33,4 +33,9 @@ proc testToStr(test: borrowed Test) throws {
   test.assertEqual(p.toStr(), "/a/b/c");
 }
 
+proc testDefaultInit(test: borrowed Test) throws {
+  var p = new path();
+  test.assertEqual(p.toStr(), "");
+}
+
 UnitTest.main();
