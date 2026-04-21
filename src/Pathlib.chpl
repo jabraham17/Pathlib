@@ -171,29 +171,45 @@ module Pathlib {
     /*
       Return ``true`` if this path refers to an existing file or directory.
     */
-    proc exists(): bool throws {
-      return FS.exists(this.pathStr);
+    proc exists(): bool {
+      try {
+        return FS.exists(this.pathStr);
+      } catch {
+        return false;
+      }
     }
 
     /*
       Return ``true`` if this path points to a regular file.
     */
-    proc isFile(): bool throws {
-      return FS.isFile(this.pathStr);
+    proc isFile(): bool {
+      try {
+        return FS.isFile(this.pathStr);
+      } catch {
+        return false;
+      }
     }
 
     /*
       Return ``true`` if this path points to a directory.
     */
-    proc isDir(): bool throws {
-      return FS.isDir(this.pathStr);
+    proc isDir(): bool {
+      try {
+        return FS.isDir(this.pathStr);
+      } catch {
+        return false;
+      }
     }
 
     /*
       Return ``true`` if this path points to a symbolic link.
     */
-    proc isSymlink(): bool throws {
-      return FS.isSymlink(this.pathStr);
+    proc isSymlink(): bool {
+      try {
+        return FS.isSymlink(this.pathStr);
+      } catch {
+        return false;
+      }
     }
 
     /*
