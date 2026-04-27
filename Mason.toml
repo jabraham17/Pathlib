@@ -1,6 +1,6 @@
 [brick]
 name = "Pathlib"
-version = "0.3.0"
+version = "0.4.0"
 chplVersion = "2.7.0"
 type = "library"
 source = "https://github.com/jabraham17/Pathlib"
