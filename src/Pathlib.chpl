@@ -121,7 +121,7 @@ module Pathlib {
 
     @chpldoc.nodoc
     proc serialize(writer, ref serializer) throws {
-      writer.write("path(", this.pathStr, ")");
+      writer.write("path(" + this.pathStr + ")");
     }
 
     /*
